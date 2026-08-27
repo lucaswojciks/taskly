@@ -17,6 +17,7 @@ import os
 # Must be set before app.core.config is imported.
 os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-auth-tests-not-for-production-use"
 
+import uuid
 from collections.abc import AsyncGenerator
 
 import pytest_asyncio
@@ -34,6 +35,7 @@ from app.core.config import settings
 from app.db.base import Base
 from app.db.session import get_session
 from app.main import app
+from tests.helpers import Headers, NewUser
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -76,3 +78,32 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
             yield http_client
     finally:
         app.dependency_overrides.pop(get_session, None)
+
+
+@pytest_asyncio.fixture
+async def new_user(client: AsyncClient) -> NewUser:
+    """Factory: register + log in a fresh user, return their Authorization header.
+
+    Each call creates a distinct user, so tests that need to check per-user
+    isolation can just call it twice.
+    """
+
+    async def _create(password: str = "s3cure-pass") -> Headers:
+        email = f"user-{uuid.uuid4().hex[:12]}@example.com"
+        registered = await client.post(
+            "/auth/register", json={"email": email, "password": password}
+        )
+        assert registered.status_code == 201, registered.text
+        logged_in = await client.post("/auth/login", json={"email": email, "password": password})
+        assert logged_in.status_code == 200, logged_in.text
+        token = logged_in.json()["access_token"]
+        assert isinstance(token, str)
+        return {"Authorization": f"Bearer {token}"}
+
+    return _create
+
+
+@pytest_asyncio.fixture
+async def auth_headers(new_user: NewUser) -> Headers:
+    """Authorization header for a single freshly-created user (the common case)."""
+    return await new_user()
