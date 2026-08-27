@@ -18,5 +18,35 @@ services:
       timeout: 5s
       retries: 5
 
+  # S3-compatible object storage for attachments (stands in for Cloudflare R2).
+  minio:
+    image: minio/minio:latest
+    container_name: taskly-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: taskly
+      MINIO_ROOT_PASSWORD: taskly-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - taskly_minio:/data
+
+  # Creates the attachments bucket once MinIO is up.
+  minio-setup:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >
+        until mc alias set local http://minio:9000 taskly taskly-secret;
+        do echo 'waiting for minio...'; sleep 1; done &&
+        mc mb --ignore-existing local/taskly-attachments &&
+        echo 'bucket taskly-attachments ready'
+    restart: "no"
+
 volumes:
   taskly_pgdata:
+  taskly_minio:
