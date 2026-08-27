@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useCreateTask } from '@/hooks/use-tasks'
 import { useCreateTag, useProjectTags } from '@/hooks/use-tags'
+import { datetimeLocalToIso } from '@/lib/datetime'
 
 const schema = z.object({
   title: z.string().trim().min(1, 'Informe o título').max(200, 'Máximo de 200 caracteres'),
@@ -32,11 +33,6 @@ const schema = z.object({
 })
 
 type FormValues = z.infer<typeof schema>
-
-/** datetime-local ("2026-09-01T18:00", local time) -> ISO string with timezone. */
-function toIsoWithTimezone(localValue: string): string {
-  return new Date(localValue).toISOString()
-}
 
 function Field({
   label,
@@ -99,7 +95,7 @@ export function NewTaskDialog({ projectId }: { projectId: string }) {
         title: values.title,
         short_description: values.shortDescription,
         full_description: values.fullDescription?.trim() || undefined,
-        deadline: values.deadline ? toIsoWithTimezone(values.deadline) : undefined,
+        deadline: values.deadline ? datetimeLocalToIso(values.deadline) : undefined,
         tag_ids: tagIds,
       })
 

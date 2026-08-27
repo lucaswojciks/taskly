@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useProjects } from '@/hooks/use-projects'
 import { useProjectTasks } from '@/hooks/use-tasks'
-import type { Task } from '@/types'
 
 type View = 'list' | 'kanban'
 
@@ -27,7 +26,10 @@ export function DashboardPage() {
     useProjectTasks(selectedProjectId)
 
   const [view, setView] = useState<View>('list')
-  const [openTask, setOpenTask] = useState<Task | null>(null)
+  // Derived from the list so edits/deletes in the sheet reflect immediately
+  // (and the sheet closes on its own when the task is removed).
+  const [openTaskId, setOpenTaskId] = useState<string | null>(null)
+  const openTask = tasks.find((task) => task.id === openTaskId) ?? null
 
   const doneCount = tasks.filter((task) => task.status === 'done').length
 
@@ -114,7 +116,7 @@ export function DashboardPage() {
                     </p>
                   </div>
                 ) : (
-                  <TaskListView tasks={tasks} onSelect={setOpenTask} />
+                  <TaskListView tasks={tasks} onSelect={(task) => setOpenTaskId(task.id)} />
                 )}
               </TabsContent>
 
@@ -122,7 +124,7 @@ export function DashboardPage() {
                 value="kanban"
                 className="mt-0 h-full overflow-hidden px-8 py-6"
               >
-                <TaskKanbanView tasks={tasks} onSelect={setOpenTask} />
+                <TaskKanbanView tasks={tasks} onSelect={(task) => setOpenTaskId(task.id)} />
               </TabsContent>
             </div>
           </Tabs>
@@ -133,7 +135,7 @@ export function DashboardPage() {
         task={openTask}
         onOpenChange={(open) => {
           if (!open) {
-            setOpenTask(null)
+            setOpenTaskId(null)
           }
         }}
       />
