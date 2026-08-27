@@ -5,6 +5,7 @@ import { NewProjectDialog } from '@/components/dashboard/new-project-dialog'
 import { NewTaskDialog } from '@/components/dashboard/new-task-dialog'
 import { StatusSummary } from '@/components/dashboard/status-summary'
 import { TaskDetailSheet } from '@/components/dashboard/task-detail-sheet'
+import { TaskKanbanView } from '@/components/tasks/task-kanban-view'
 import { TaskListView } from '@/components/tasks/task-list-view'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -91,7 +92,7 @@ export function DashboardPage() {
                     Kanban
                   </TabsTrigger>
                 </TabsList>
-                <NewTaskDialog />
+                {selectedProjectId && <NewTaskDialog projectId={selectedProjectId} />}
               </div>
             </header>
 
@@ -99,8 +100,8 @@ export function DashboardPage() {
               <StatusSummary tasks={tasks} />
             </div>
 
-            <div className="flex-1 overflow-y-auto px-8 py-6">
-              <TabsContent value="list" className="mt-0">
+            <div className="flex-1 overflow-hidden">
+              <TabsContent value="list" className="mt-0 h-full overflow-y-auto px-8 py-6">
                 {tasksLoading ? (
                   <p className="text-sm text-muted-foreground">Carregando tarefas…</p>
                 ) : tasks.length === 0 ? (
@@ -117,10 +118,11 @@ export function DashboardPage() {
                 )}
               </TabsContent>
 
-              <TabsContent value="kanban" className="mt-0">
-                <div className="grid place-items-center py-20 text-sm text-muted-foreground">
-                  A visão Kanban chega em breve.
-                </div>
+              <TabsContent
+                value="kanban"
+                className="mt-0 h-full overflow-hidden px-8 py-6"
+              >
+                <TaskKanbanView tasks={tasks} onSelect={setOpenTask} />
               </TabsContent>
             </div>
           </Tabs>
