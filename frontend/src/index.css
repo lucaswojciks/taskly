@@ -1,0 +1,183 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ *
+ * Taskly brand palette — petrol / indigo, see design-reference/
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-brand-50: #f0f7f9;
+  --color-brand-100: #daecf1;
+  --color-brand-200: #b7d9e3;
+  --color-brand-300: #88bece;
+  --color-brand-400: #4f9cb4;
+  --color-brand-500: #2f7f9b;
+  --color-brand-600: #256a83;
+  --color-brand-700: #21566b;
+  --color-brand-800: #204759;
+  --color-brand-900: #1e3c4c;
+  --color-brand-950: #0f2530;
+
+  /* deep indigo/navy used for the logo mark and the login hero panel */
+  --color-navy-700: #1d3446;
+  --color-navy-800: #17293b;
+  --color-navy-900: #12212f;
+  --color-navy-950: #0c1720;
+
+  /* task status accents (badge text + soft background) */
+  --color-status-neutral: #64748b;
+  --color-status-neutral-soft: #f1f5f9;
+  --color-status-progress: #2563eb;
+  --color-status-progress-soft: #eff6ff;
+  --color-status-done: #059669;
+  --color-status-done-soft: #ecfdf5;
+  --color-status-cancelled: #e11d48;
+  --color-status-cancelled-soft: #fff1f2;
+
+  --shadow-card: 0 1px 2px rgb(15 37 48 / 0.04), 0 6px 20px rgb(15 37 48 / 0.06);
+}
+
+/* ------------------------------------------------------------------ *
+ * shadcn/ui design tokens
+ * ------------------------------------------------------------------ */
+:root {
+  --radius: 0.625rem;
+
+  --background: #f7f9fb;
+  --foreground: #16232e;
+
+  --card: #ffffff;
+  --card-foreground: #16232e;
+  --popover: #ffffff;
+  --popover-foreground: #16232e;
+
+  --primary: #256a83;
+  --primary-foreground: #f0f7f9;
+
+  --secondary: #eef3f5;
+  --secondary-foreground: #204759;
+
+  --muted: #eef2f5;
+  --muted-foreground: #64748b;
+
+  --accent: #e3eef2;
+  --accent-foreground: #1e3c4c;
+
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+
+  --border: #e2e8ee;
+  --input: #e2e8ee;
+  --ring: #2f7f9b;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #16232e;
+  --sidebar-primary: #256a83;
+  --sidebar-primary-foreground: #f0f7f9;
+  --sidebar-accent: #eef4f6;
+  --sidebar-accent-foreground: #1e3c4c;
+  --sidebar-border: #e9eef2;
+  --sidebar-ring: #2f7f9b;
+
+  --chart-1: #2f7f9b;
+  --chart-2: #2563eb;
+  --chart-3: #059669;
+  --chart-4: #e11d48;
+  --chart-5: #7c3aed;
+}
+
+.dark {
+  --background: #0c1720;
+  --foreground: #e7eef2;
+
+  --card: #12212f;
+  --card-foreground: #e7eef2;
+  --popover: #12212f;
+  --popover-foreground: #e7eef2;
+
+  --primary: #4f9cb4;
+  --primary-foreground: #0c1720;
+
+  --secondary: #1d3446;
+  --secondary-foreground: #e7eef2;
+
+  --muted: #17293b;
+  --muted-foreground: #90a4b1;
+
+  --accent: #1d3446;
+  --accent-foreground: #e7eef2;
+
+  --destructive: #fb7185;
+  --destructive-foreground: #0c1720;
+
+  --border: #24384a;
+  --input: #24384a;
+  --ring: #4f9cb4;
+
+  --sidebar: #12212f;
+  --sidebar-foreground: #e7eef2;
+  --sidebar-primary: #4f9cb4;
+  --sidebar-primary-foreground: #0c1720;
+  --sidebar-accent: #1d3446;
+  --sidebar-accent-foreground: #e7eef2;
+  --sidebar-border: #24384a;
+  --sidebar-ring: #4f9cb4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+}
