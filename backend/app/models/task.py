@@ -14,6 +14,7 @@ from app.models.base import TimestampMixin, UUIDMixin
 if TYPE_CHECKING:
     from app.models.attachment import Attachment
     from app.models.project import Project
+    from app.models.tag import Tag
     from app.models.task_tag import TaskTag
 
 
@@ -55,3 +56,12 @@ class Task(UUIDMixin, TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    @property
+    def tags(self) -> list["Tag"]:
+        """Tags linked to this task.
+
+        Read-only view over ``task_tags``; both ``task_tags`` and their ``tag``
+        must be eagerly loaded by the caller (the task repository does this).
+        """
+        return [task_tag.tag for task_tag in self.task_tags]

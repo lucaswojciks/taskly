@@ -49,6 +49,12 @@ class ValidationError(DomainError):
     code = "validation_error"
 
 
+class InvalidTagIdsError(ValidationError):
+    """One or more tag_ids are invalid or do not belong to this project."""
+
+    code = "invalid_tag_ids"
+
+
 class AuthenticationError(DomainError):
     """Base class for authentication failures (maps to HTTP 401)."""
 
