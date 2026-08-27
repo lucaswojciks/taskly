@@ -245,9 +245,10 @@ function TaskDetailPanel({ task, onClose }: { task: Task; onClose: () => void })
         <SaveIndicator state={saveState} />
       </div>
 
-      <div className="flex-1 space-y-6 overflow-y-auto px-5 py-5">
-        <Section label="Título">
+      <div className="flex-1 space-y-6 overflow-y-auto px-4 py-5 sm:px-5">
+        <Section label="Título" htmlFor="task-title">
           <input
+            id="task-title"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             onBlur={commitTitle}
@@ -265,8 +266,9 @@ function TaskDetailPanel({ task, onClose }: { task: Task; onClose: () => void })
           />
         </Section>
 
-        <Section label="Resumo">
+        <Section label="Resumo" htmlFor="task-short">
           <Input
+            id="task-short"
             value={shortDescription}
             onChange={(event) => setShortDescription(event.target.value)}
             onBlur={commitShortDescription}
@@ -275,8 +277,9 @@ function TaskDetailPanel({ task, onClose }: { task: Task; onClose: () => void })
           />
         </Section>
 
-        <Section label="Descrição completa">
+        <Section label="Descrição completa" htmlFor="task-full">
           <Textarea
+            id="task-full"
             value={fullDescription}
             onChange={(event) => setFullDescription(event.target.value)}
             onBlur={commitFullDescription}
@@ -286,9 +289,9 @@ function TaskDetailPanel({ task, onClose }: { task: Task; onClose: () => void })
           />
         </Section>
 
-        <Section label="Status">
+        <Section label="Status" htmlFor="task-status">
           <Select value={status} onValueChange={changeStatus}>
-            <SelectTrigger className="h-10 w-full">
+            <SelectTrigger id="task-status" className="h-10 w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -306,9 +309,10 @@ function TaskDetailPanel({ task, onClose }: { task: Task; onClose: () => void })
           </Select>
         </Section>
 
-        <Section label="Prazo">
+        <Section label="Prazo" htmlFor="task-deadline">
           <div className="flex items-center gap-2">
             <Input
+              id="task-deadline"
               type="datetime-local"
               value={deadlineLocal}
               onChange={changeDeadline}
@@ -351,13 +355,21 @@ function TaskDetailPanel({ task, onClose }: { task: Task; onClose: () => void })
             ref={fileInputRef}
             type="file"
             accept="image/jpeg,image/png,image/webp,application/pdf"
+            aria-label="Enviar arquivo como anexo"
             className="hidden"
             onChange={handleFileChange}
           />
 
           {uploadPercent !== null && (
             <div className="space-y-1">
-              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div
+                role="progressbar"
+                aria-label="Enviando anexo"
+                aria-valuenow={uploadPercent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                className="h-1.5 overflow-hidden rounded-full bg-muted"
+              >
                 <div
                   className="h-full rounded-full bg-brand-500 transition-all"
                   style={{ width: `${uploadPercent}%` }}
@@ -424,12 +436,23 @@ function TaskDetailPanel({ task, onClose }: { task: Task; onClose: () => void })
   )
 }
 
-function Section({ label, children }: { label: string; children: ReactNode }) {
+function Section({
+  label,
+  htmlFor,
+  children,
+}: {
+  label: string
+  htmlFor?: string
+  children: ReactNode
+}) {
   return (
     <div className="space-y-1.5">
-      <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+      <label
+        htmlFor={htmlFor}
+        className="block text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+      >
         {label}
-      </p>
+      </label>
       {children}
     </div>
   )

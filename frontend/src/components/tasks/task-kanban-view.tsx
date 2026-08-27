@@ -50,7 +50,8 @@ export function TaskKanbanView({ tasks, onSelect }: TaskKanbanViewProps) {
                     key={task.id}
                     type="button"
                     onClick={() => onSelect(task)}
-                    className="w-full rounded-lg border bg-card p-3 text-left shadow-sm transition-shadow hover:shadow-card"
+                    aria-label={`Abrir tarefa: ${task.title}`}
+                    className="w-full rounded-lg border bg-card p-3 text-left shadow-sm transition-shadow hover:shadow-card focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                   >
                     <p
                       className={cn(

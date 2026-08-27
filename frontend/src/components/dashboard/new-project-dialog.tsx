@@ -59,6 +59,7 @@ export function NewProjectDialog({ children, onCreated }: NewProjectDialogProps)
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             autoFocus
+            aria-label="Nome do projeto"
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder="Ex.: Taskly App"

@@ -65,7 +65,7 @@ export function TagMultiSelect({ availableTags, value, onChange }: TagMultiSelec
 
   return (
     <div className="space-y-2">
-      <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-md border border-input px-2 py-1.5">
+      <div className="flex min-h-10 flex-wrap items-center gap-1.5 rounded-md border border-input px-2 py-1.5 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/40">
         {value.map((item) => (
           <span
             key={item.name}
@@ -90,6 +90,7 @@ export function TagMultiSelect({ availableTags, value, onChange }: TagMultiSelec
           value={input}
           onChange={(event) => setInput(event.target.value)}
           onKeyDown={handleKeyDown}
+          aria-label="Adicionar tag"
           placeholder={value.length === 0 ? 'Digite e pressione Enter' : ''}
           className="min-w-24 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
@@ -102,7 +103,7 @@ export function TagMultiSelect({ availableTags, value, onChange }: TagMultiSelec
               key={tag.id}
               type="button"
               onClick={() => add(tag.name)}
-              className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-muted"
+              className="inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
               <PlusIcon className="size-3" />
               {tag.name}

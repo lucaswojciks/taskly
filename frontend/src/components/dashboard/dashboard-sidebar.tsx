@@ -20,19 +20,31 @@ import { useProjects } from '@/hooks/use-projects'
 import { projectColor } from '@/lib/colors'
 import { cn } from '@/lib/utils'
 
-interface DashboardSidebarProps {
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50'
+
+interface SidebarNavProps {
   selectedProjectId: string | null
   onSelectProject: (projectId: string) => void
+  /** Called after any navigation action — used to close the mobile drawer. */
+  onNavigate?: () => void
 }
 
-export function DashboardSidebar({
+/** Sidebar content, shared between the desktop rail and the mobile drawer. */
+export function SidebarNav({
   selectedProjectId,
   onSelectProject,
-}: DashboardSidebarProps) {
+  onNavigate,
+}: SidebarNavProps) {
   const navigate = useNavigate()
   const { logout } = useAuth()
   const { data: user } = useCurrentUser()
-  const { data: projects = [], isLoading } = useProjects()
+  const {
+    data: projects = [],
+    isLoading,
+    isError,
+    isPaused,
+  } = useProjects()
 
   const email = user?.email ?? ''
   const initial = email.charAt(0).toUpperCase() || '?'
@@ -42,8 +54,13 @@ export function DashboardSidebar({
     navigate('/login', { replace: true })
   }
 
+  function handleSelect(projectId: string) {
+    onSelectProject(projectId)
+    onNavigate?.()
+  }
+
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r bg-sidebar">
+    <div className="flex h-full flex-col bg-sidebar">
       <div className="flex h-16 items-center gap-2 border-b px-5">
         <span className="flex size-8 items-center justify-center rounded-lg bg-navy-900 text-white">
           <SquareCheckBigIcon className="size-4" />
@@ -55,7 +72,10 @@ export function DashboardSidebar({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex items-center gap-3 border-b px-5 py-4 text-left transition-colors hover:bg-muted/50"
+            className={cn(
+              'flex items-center gap-3 border-b px-5 py-4 text-left transition-colors hover:bg-muted/50',
+              FOCUS_RING,
+            )}
           >
             <Avatar>
               <AvatarFallback className="bg-brand-100 font-semibold text-brand-700">
@@ -89,13 +109,15 @@ export function DashboardSidebar({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 pb-3">
+      <nav className="flex-1 overflow-y-auto px-3 pb-3" aria-label="Projetos">
         <p className="px-3 py-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           Projetos
         </p>
 
         {isLoading ? (
           <p className="px-3 text-xs text-muted-foreground">Carregando…</p>
+        ) : isError || isPaused ? (
+          <p className="px-3 text-xs text-destructive">Erro ao carregar projetos.</p>
         ) : projects.length === 0 ? (
           <p className="px-3 text-xs text-muted-foreground">Nenhum projeto ainda.</p>
         ) : (
@@ -106,9 +128,11 @@ export function DashboardSidebar({
                 <li key={project.id}>
                   <button
                     type="button"
-                    onClick={() => onSelectProject(project.id)}
+                    onClick={() => handleSelect(project.id)}
+                    aria-current={active ? 'true' : undefined}
                     className={cn(
                       'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
+                      FOCUS_RING,
                       active
                         ? 'bg-brand-50 font-semibold text-brand-800'
                         : 'text-foreground hover:bg-muted/60',
@@ -125,19 +149,31 @@ export function DashboardSidebar({
             })}
           </ul>
         )}
-      </div>
+      </nav>
 
       <div className="border-t p-3">
-        <NewProjectDialog onCreated={onSelectProject}>
+        <NewProjectDialog onCreated={handleSelect}>
           <button
             type="button"
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-brand-300 hover:text-brand-700"
+            className={cn(
+              'flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-brand-300 hover:text-brand-700',
+              FOCUS_RING,
+            )}
           >
             <PlusIcon className="size-4" />
             Novo projeto
           </button>
         </NewProjectDialog>
       </div>
+    </div>
+  )
+}
+
+/** Fixed left rail, shown from the `lg` breakpoint up. */
+export function DashboardSidebar(props: SidebarNavProps) {
+  return (
+    <aside className="hidden w-64 shrink-0 border-r lg:block">
+      <SidebarNav {...props} />
     </aside>
   )
 }

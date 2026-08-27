@@ -10,8 +10,14 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
+      // 'always' so a failed request surfaces an error the user can retry,
+      // instead of pausing silently when the browser thinks it is offline.
+      networkMode: 'always',
       refetchOnWindowFocus: false,
       staleTime: 30_000,
+    },
+    mutations: {
+      networkMode: 'always',
     },
   },
 })
