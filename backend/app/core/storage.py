@@ -55,7 +55,12 @@ def _default_storage() -> ObjectStorage:
         aws_access_key_id=settings.r2_access_key_id,
         aws_secret_access_key=settings.r2_secret_access_key,
         region_name="auto",
-        config=Config(signature_version="s3v4"),
+        # Path-style addressing works with both Cloudflare R2 and a local
+        # MinIO container (see docker-compose.yml).
+        config=Config(
+            signature_version="s3v4",
+            s3={"addressing_style": "path"},
+        ),
     )
     return ObjectStorage(
         client=client,
