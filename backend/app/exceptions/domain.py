@@ -47,3 +47,21 @@ class ValidationError(DomainError):
     """A business rule rejected the input."""
 
     code = "validation_error"
+
+
+class AuthenticationError(DomainError):
+    """Base class for authentication failures (maps to HTTP 401)."""
+
+    code = "authentication_error"
+
+
+class InvalidCredentialsError(AuthenticationError):
+    """Invalid email or password."""
+
+    code = "invalid_credentials"
+
+
+class NotAuthenticatedError(AuthenticationError):
+    """Not authenticated."""
+
+    code = "not_authenticated"

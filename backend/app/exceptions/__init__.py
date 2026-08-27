@@ -1,9 +1,12 @@
 """Domain exceptions and the central exception handler."""
 
 from app.exceptions.domain import (
+    AuthenticationError,
     ConflictError,
     DomainError,
     EmailAlreadyExistsError,
+    InvalidCredentialsError,
+    NotAuthenticatedError,
     PermissionDeniedError,
     ResourceNotFoundError,
     ValidationError,
@@ -11,9 +14,12 @@ from app.exceptions.domain import (
 from app.exceptions.handlers import register_exception_handlers
 
 __all__ = [
+    "AuthenticationError",
     "ConflictError",
     "DomainError",
     "EmailAlreadyExistsError",
+    "InvalidCredentialsError",
+    "NotAuthenticatedError",
     "PermissionDeniedError",
     "ResourceNotFoundError",
     "ValidationError",

@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
 from app.exceptions.domain import (
+    AuthenticationError,
     ConflictError,
     DomainError,
     PermissionDeniedError,
@@ -13,6 +14,7 @@ from app.exceptions.domain import (
 
 _STATUS_BY_EXCEPTION: list[tuple[type[DomainError], int]] = [
     (ResourceNotFoundError, status.HTTP_404_NOT_FOUND),
+    (AuthenticationError, status.HTTP_401_UNAUTHORIZED),
     (PermissionDeniedError, status.HTTP_403_FORBIDDEN),
     (ConflictError, status.HTTP_409_CONFLICT),
     (ValidationError, 422),

@@ -20,6 +20,14 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://taskly:taskly@localhost:5432/taskly"
     test_database_url: str = "postgresql+asyncpg://taskly:taskly@localhost:5432/taskly_test"
 
+    # Authentication. In production JWT_SECRET_KEY MUST be overridden with a
+    # random value of at least 32 bytes; the default here exists only so local
+    # dev and the test suite run without extra setup.
+    jwt_secret_key: str = "insecure-dev-secret-change-me-0123456789abcdef"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+    bcrypt_rounds: int = 12
+
 
 @lru_cache
 def get_settings() -> Settings:

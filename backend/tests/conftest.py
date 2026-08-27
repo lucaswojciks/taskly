@@ -10,6 +10,13 @@ Isolation strategy
   session, so endpoints and assertions share the same transaction.
 """
 
+import os
+
+# Force the JWT signing secret to the value the auth tests use to forge tokens,
+# so "expired token" exercises the expiry path and not the signature path.
+# Must be set before app.core.config is imported.
+os.environ["JWT_SECRET_KEY"] = "test-secret-key-for-auth-tests-not-for-production-use"
+
 from collections.abc import AsyncGenerator
 
 import pytest_asyncio
