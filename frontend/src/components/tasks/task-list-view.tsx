@@ -23,7 +23,8 @@ export function TaskListView({ tasks, onSelect }: TaskListViewProps) {
             <button
               type="button"
               onClick={() => onSelect(task)}
-              className="flex w-full items-center gap-4 rounded-xl border bg-card px-5 py-4 text-left shadow-card transition-colors hover:border-brand-200 hover:bg-brand-50/40"
+              aria-label={`Abrir tarefa: ${task.title}`}
+              className="flex w-full items-center gap-3 rounded-xl border bg-card px-4 py-3.5 text-left shadow-card transition-colors hover:border-brand-200 hover:bg-brand-50/40 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none sm:gap-4 sm:px-5 sm:py-4"
             >
               <span
                 className={cn(

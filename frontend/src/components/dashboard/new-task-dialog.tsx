@@ -36,11 +36,13 @@ type FormValues = z.infer<typeof schema>
 
 function Field({
   label,
+  htmlFor,
   hint,
   error,
   children,
 }: {
   label: string
+  htmlFor?: string
   hint?: string
   error?: string
   children: ReactNode
@@ -48,13 +50,20 @@ function Field({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+        <label
+          htmlFor={htmlFor}
+          className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        >
           {label}
-        </span>
+        </label>
         {hint && <span className="text-xs text-muted-foreground/70">{hint}</span>}
       </div>
       {children}
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && (
+        <p className="text-xs text-destructive" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -132,8 +141,9 @@ export function NewTaskDialog({ projectId }: { projectId: string }) {
         </DialogHeader>
 
         <form onSubmit={onSubmit} className="space-y-4">
-          <Field label="Título" error={errors.title?.message}>
+          <Field label="Título" htmlFor="new-task-title" error={errors.title?.message}>
             <Input
+              id="new-task-title"
               autoFocus
               maxLength={200}
               className="h-10"
@@ -142,8 +152,13 @@ export function NewTaskDialog({ projectId }: { projectId: string }) {
             />
           </Field>
 
-          <Field label="Descrição curta" error={errors.shortDescription?.message}>
+          <Field
+            label="Descrição curta"
+            htmlFor="new-task-short"
+            error={errors.shortDescription?.message}
+          >
             <Input
+              id="new-task-short"
               maxLength={500}
               className="h-10"
               {...register('shortDescription')}
@@ -151,12 +166,27 @@ export function NewTaskDialog({ projectId }: { projectId: string }) {
             />
           </Field>
 
-          <Field label="Descrição completa" hint="opcional" error={errors.fullDescription?.message}>
-            <Textarea rows={3} maxLength={20000} {...register('fullDescription')} />
+          <Field
+            label="Descrição completa"
+            htmlFor="new-task-full"
+            hint="opcional"
+            error={errors.fullDescription?.message}
+          >
+            <Textarea
+              id="new-task-full"
+              rows={3}
+              maxLength={20000}
+              {...register('fullDescription')}
+            />
           </Field>
 
-          <Field label="Prazo" hint="opcional">
-            <Input type="datetime-local" className="h-10" {...register('deadline')} />
+          <Field label="Prazo" htmlFor="new-task-deadline" hint="opcional">
+            <Input
+              id="new-task-deadline"
+              type="datetime-local"
+              className="h-10"
+              {...register('deadline')}
+            />
           </Field>
 
           <Field label="Tags" hint="opcional">
