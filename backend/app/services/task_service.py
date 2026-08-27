@@ -9,15 +9,18 @@ import uuid
 from collections.abc import Sequence
 
 from sqlalchemy import delete
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.storage import ObjectStorage
 from app.exceptions.domain import InvalidTagIdsError, ResourceNotFoundError
 from app.models.project import Project
 from app.models.task import Task
 from app.repositories.tag import TagRepository
 from app.repositories.task import TaskRepository
 from app.repositories.task_tag import TaskTagRepository
-from app.schemas.task import TaskCreate, TaskUpdate
+from app.schemas.task import TaskCreate, TaskRead, TaskUpdate
 from app.services.base import BaseService
+from app.services.presenters import task_to_read
 
 # PATCH fields where an explicit ``null`` is meaningful (clears the value)
 # rather than "leave unchanged".
@@ -29,6 +32,10 @@ def _deduplicate(tag_ids: Sequence[uuid.UUID]) -> list[uuid.UUID]:
 
 
 class TaskService(BaseService):
+    def __init__(self, session: AsyncSession, storage: ObjectStorage) -> None:
+        super().__init__(session)
+        self._storage = storage
+
     @property
     def _tasks(self) -> TaskRepository:
         return TaskRepository(self.session)
@@ -41,7 +48,7 @@ class TaskService(BaseService):
     def _task_tags(self) -> TaskTagRepository:
         return TaskTagRepository(self.session)
 
-    async def create(self, project: Project, data: TaskCreate) -> Task:
+    async def create(self, project: Project, data: TaskCreate) -> TaskRead:
         tag_ids = _deduplicate(data.tag_ids)
         await self._require_tags_in_project(project.id, tag_ids)
 
@@ -56,21 +63,19 @@ class TaskService(BaseService):
         self.session.add(task)
         await self.session.flush()
         await self._task_tags.replace_task_tags(task.id, tag_ids)
-        return await self._reload(project.id, task.id)
+        return task_to_read(await self._reload(project.id, task.id), self._storage)
 
     async def list_for_project(
         self, project: Project, *, limit: int, offset: int
-    ) -> Sequence[Task]:
-        return await self._tasks.list_by_project(project.id, limit=limit, offset=offset)
+    ) -> list[TaskRead]:
+        tasks = await self._tasks.list_by_project(project.id, limit=limit, offset=offset)
+        return [task_to_read(task, self._storage) for task in tasks]
 
-    async def get(self, project: Project, task_id: uuid.UUID) -> Task:
-        task = await self._tasks.get_in_project(project.id, task_id)
-        if task is None:
-            raise ResourceNotFoundError("Task not found.")
-        return task
+    async def get_detail(self, project: Project, task_id: uuid.UUID) -> TaskRead:
+        return task_to_read(await self._get_task(project, task_id), self._storage)
 
-    async def update(self, project: Project, task_id: uuid.UUID, data: TaskUpdate) -> Task:
-        task = await self.get(project, task_id)
+    async def update(self, project: Project, task_id: uuid.UUID, data: TaskUpdate) -> TaskRead:
+        task = await self._get_task(project, task_id)
 
         replace_tags = "tag_ids" in data.model_fields_set
         new_tag_ids: list[uuid.UUID] = []
@@ -90,13 +95,19 @@ class TaskService(BaseService):
             await self._task_tags.replace_task_tags(task_id, new_tag_ids)
 
         await self.session.flush()
-        return await self._reload(project.id, task_id)
+        return task_to_read(await self._reload(project.id, task_id), self._storage)
 
     async def delete(self, project: Project, task_id: uuid.UUID) -> None:
-        task = await self.get(project, task_id)
+        task = await self._get_task(project, task_id)
         # Postgres cascades to task_tags and attachments; the tags survive.
         await self.session.execute(delete(Task).where(Task.id == task.id))
         await self.session.flush()
+
+    async def _get_task(self, project: Project, task_id: uuid.UUID) -> Task:
+        task = await self._tasks.get_in_project(project.id, task_id)
+        if task is None:
+            raise ResourceNotFoundError("Task not found.")
+        return task
 
     async def _reload(self, project_id: uuid.UUID, task_id: uuid.UUID) -> Task:
         task = await self._tasks.get_in_project(project_id, task_id, refresh=True)

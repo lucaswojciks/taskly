@@ -28,6 +28,18 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     bcrypt_rounds: int = 12
 
+    # Object storage (Cloudflare R2, S3-compatible). Like JWT_SECRET_KEY, the
+    # credentials MUST be overridden in production; the defaults only let local
+    # dev and the test suite import without extra setup (the tests stub storage).
+    r2_account_id: str = "dev-account"
+    r2_endpoint_url: str = "https://dev-account.r2.cloudflarestorage.com"
+    r2_access_key_id: str = "dev-access-key-id"
+    r2_secret_access_key: str = "dev-secret-access-key"
+    r2_bucket: str = "taskly-attachments"
+
+    attachment_max_bytes: int = 10 * 1024 * 1024
+    attachment_url_ttl_seconds: int = 3600
+
 
 @lru_cache
 def get_settings() -> Settings:

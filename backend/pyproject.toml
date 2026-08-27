@@ -18,6 +18,9 @@ dependencies = [
     "email-validator>=2.2",
     "pyjwt>=2.10",
     "pwdlib[bcrypt]>=0.2.1",
+    "boto3>=1.35",
+    "python-multipart>=0.0.12",
+    "anyio>=4.4",
 ]
 
 [project.optional-dependencies]
@@ -62,6 +65,10 @@ exclude = ["^alembic/", "^build/"]
 [[tool.mypy.overrides]]
 module = ["alembic.*"]
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["boto3.*", "botocore.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

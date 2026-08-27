@@ -20,7 +20,10 @@ class TaskRepository(BaseRepository[Task]):
         stmt = (
             select(Task)
             .where(Task.project_id == project_id)
-            .options(selectinload(Task.task_tags).selectinload(TaskTag.tag))
+            .options(
+                selectinload(Task.task_tags).selectinload(TaskTag.tag),
+                selectinload(Task.attachments),
+            )
             .order_by(Task.created_at.desc(), Task.id.desc())
             .limit(limit)
             .offset(offset)
@@ -34,11 +37,14 @@ class TaskRepository(BaseRepository[Task]):
         stmt = (
             select(Task)
             .where(Task.id == task_id, Task.project_id == project_id)
-            .options(selectinload(Task.task_tags).selectinload(TaskTag.tag))
+            .options(
+                selectinload(Task.task_tags).selectinload(TaskTag.tag),
+                selectinload(Task.attachments),
+            )
         )
         if refresh:
-            # Force already-loaded instances (and their tag collection) to
-            # refresh, so callers see writes made earlier in this transaction.
+            # Force already-loaded instances (and their collections) to refresh,
+            # so callers see writes made earlier in this transaction.
             stmt = stmt.execution_options(populate_existing=True)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()

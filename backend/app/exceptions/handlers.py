@@ -7,8 +7,10 @@ from app.exceptions.domain import (
     AuthenticationError,
     ConflictError,
     DomainError,
+    FileTooLargeError,
     PermissionDeniedError,
     ResourceNotFoundError,
+    StorageError,
     ValidationError,
 )
 
@@ -17,6 +19,8 @@ _STATUS_BY_EXCEPTION: list[tuple[type[DomainError], int]] = [
     (AuthenticationError, status.HTTP_401_UNAUTHORIZED),
     (PermissionDeniedError, status.HTTP_403_FORBIDDEN),
     (ConflictError, status.HTTP_409_CONFLICT),
+    (FileTooLargeError, 413),
+    (StorageError, 502),
     (ValidationError, 422),
 ]
 

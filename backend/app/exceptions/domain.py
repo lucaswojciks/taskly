@@ -55,6 +55,27 @@ class InvalidTagIdsError(ValidationError):
     code = "invalid_tag_ids"
 
 
+class UnsupportedFileTypeError(ValidationError):
+    """Only JPEG, PNG, WebP and PDF files are allowed."""
+
+    code = "unsupported_file_type"
+
+
+class FileTooLargeError(DomainError):
+    """The uploaded file exceeds the maximum allowed size (maps to HTTP 413)."""
+
+    code = "file_too_large"
+
+
+class StorageError(DomainError):
+    """The object storage backend failed (maps to HTTP 502)."""
+
+    code = "storage_error"
+
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or "Could not store the file. Please try again.")
+
+
 class AuthenticationError(DomainError):
     """Base class for authentication failures (maps to HTTP 401)."""
 

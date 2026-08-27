@@ -6,6 +6,7 @@ import uuid
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.models.task import TaskStatus
+from app.schemas.attachment import AttachmentRead
 from app.schemas.common import TrimmedStr
 from app.schemas.tag import TagRead
 
@@ -47,5 +48,6 @@ class TaskRead(BaseModel):
     deadline: dt.datetime | None
     status: TaskStatus
     tags: list[TagRead]
+    attachments: list[AttachmentRead]
     created_at: dt.datetime
     updated_at: dt.datetime
