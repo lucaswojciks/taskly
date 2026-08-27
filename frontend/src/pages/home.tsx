@@ -2,11 +2,12 @@ import { useNavigate } from 'react-router-dom'
 import { SquareCheckBigIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth, useCurrentUser } from '@/hooks/use-auth'
 
 export function HomePage() {
   const navigate = useNavigate()
   const { logout } = useAuth()
+  const { data: user } = useCurrentUser()
 
   function handleLogout() {
     logout()
@@ -24,8 +25,13 @@ export function HomePage() {
           Hello Taskly
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Esqueleto do frontend rodando — roteamento, tema petróleo/índigo, TanStack
-          Query e client HTTP prontos.
+          {user ? (
+            <>
+              Autenticado como <span className="font-medium text-foreground">{user.email}</span>.
+            </>
+          ) : (
+            'Esqueleto do frontend rodando — roteamento, tema, TanStack Query e client HTTP prontos.'
+          )}
         </p>
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">

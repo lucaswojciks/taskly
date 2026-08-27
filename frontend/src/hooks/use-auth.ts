@@ -1,23 +1,46 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { meRequest } from '@/lib/auth-api'
 import { clearToken, getToken, setToken } from '@/lib/auth'
+import type { User } from '@/types'
+
+export const ME_QUERY_KEY = ['auth', 'me'] as const
 
 /**
- * Minimal auth state helper for the skeleton. Route protection itself reads the
- * token synchronously (see ProtectedRoute); this hook is a convenience for the
- * login/register screens to be built next.
+ * The currently authenticated user (GET /auth/me). Only runs when a token is
+ * present; a 401 here is handled globally by the axios interceptor (token
+ * cleared, redirect to /login).
  */
-export function useAuth() {
-  const [token, setTokenState] = useState<string | null>(() => getToken())
+export function useCurrentUser() {
+  return useQuery<User>({
+    queryKey: ME_QUERY_KEY,
+    queryFn: meRequest,
+    enabled: getToken() !== null,
+    retry: false,
+    staleTime: 5 * 60_000,
+  })
+}
 
-  const login = useCallback((newToken: string) => {
-    setToken(newToken)
-    setTokenState(newToken)
-  }, [])
+/** Imperative auth actions for the login / register / logout flows. */
+export function useAuth() {
+  const queryClient = useQueryClient()
+
+  const login = useCallback(
+    (token: string) => {
+      setToken(token)
+      void queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY })
+    },
+    [queryClient],
+  )
 
   const logout = useCallback(() => {
     clearToken()
-    setTokenState(null)
-  }, [])
+    queryClient.clear()
+  }, [queryClient])
 
-  return { token, isAuthenticated: token !== null, login, logout }
+  return {
+    isAuthenticated: getToken() !== null,
+    login,
+    logout,
+  }
 }
