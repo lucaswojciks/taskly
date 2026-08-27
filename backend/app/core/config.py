@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     app_name: str = "Taskly API"
     debug: bool = False
 
+    # Browser origins allowed to call the API (the Vite dev server and its
+    # preview server by default). Accepts a JSON array or comma-separated list.
+    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:4173"]
+
     database_url: str = "postgresql+asyncpg://taskly:taskly@localhost:5432/taskly"
     test_database_url: str = "postgresql+asyncpg://taskly:taskly@localhost:5432/taskly_test"
 
