@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,11 +19,29 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Browser origins allowed to call the API (the Vite dev server and its
-    # preview server by default). Accepts a JSON array or comma-separated list.
+    # preview server by default). Set via the CORS_ORIGINS env var as a JSON
+    # array string, e.g. '["https://taskly.vercel.app"]' — the format Render's
+    # dashboard and python-dotenv pass through unchanged.
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:4173"]
 
     database_url: str = "postgresql+asyncpg://taskly:taskly@localhost:5432/taskly"
     test_database_url: str = "postgresql+asyncpg://taskly:taskly@localhost:5432/taskly_test"
+
+    @field_validator("database_url", "test_database_url", mode="after")
+    @classmethod
+    def _require_asyncpg_driver(cls, value: str) -> str:
+        """Normalise a plain Postgres URL to the asyncpg driver.
+
+        Render's managed Postgres exposes its connection string as
+        ``postgres://…`` / ``postgresql://…``. SQLAlchemy's async engine (and
+        Alembic's online migrations) need the driver spelled out, so rewrite the
+        scheme when a bare one is provided.
+        """
+        if value.startswith("postgres://"):
+            value = "postgresql://" + value[len("postgres://") :]
+        if value.startswith("postgresql://"):
+            value = "postgresql+asyncpg://" + value[len("postgresql://") :]
+        return value
 
     # Authentication. In production JWT_SECRET_KEY MUST be overridden with a
     # random value of at least 32 bytes; the default here exists only so local
