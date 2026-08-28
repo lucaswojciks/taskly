@@ -5,3 +5,10 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .env
+.env.example
+tests/
+scripts/
+docker-compose.yml
+Dockerfile
+.dockerignore
+*.md

@@ -1,0 +1,63 @@
+# Render Blueprint for the Taskly backend.
+# Apply from the Render dashboard: New > Blueprint > pick this repo.
+# https://render.com/docs/blueprint-spec
+#
+# The frontend is NOT part of this blueprint — it is deployed separately on
+# Vercel (see the "Deploy" section of the root README).
+
+databases:
+  - name: taskly-db
+    plan: free
+    region: oregon
+    databaseName: taskly
+    user: taskly
+
+services:
+  - type: web
+    name: taskly-api
+    runtime: docker
+    plan: free
+    region: oregon
+    # With rootDir set, Render resolves dockerfilePath / dockerContext and the
+    # auto-deploy watch paths relative to backend/.
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Wired automatically to the managed Postgres above. Render provides a
+      # `postgresql://` URL; core/config.py rewrites it to the asyncpg driver.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: taskly-db
+          property: connectionString
+
+      # Secrets and environment-specific values: left unset here (sync: false)
+      # so they are filled in by hand in the Render dashboard after the first
+      # apply, and never committed to the repo.
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: JWT_ALGORITHM
+        sync: false
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        sync: false
+      - key: BCRYPT_ROUNDS
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ENDPOINT_URL
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: ATTACHMENT_MAX_BYTES
+        sync: false
+      - key: ATTACHMENT_URL_TTL_SECONDS
+        sync: false
+      # JSON array string, e.g. ["https://taskly.vercel.app"]
+      - key: CORS_ORIGINS
+        sync: false
