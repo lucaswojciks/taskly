@@ -1,67 +1,95 @@
-# taskly
+# Taskly
 
-Sistema de gestão de tarefas — teste técnico UEX
+Sistema de gestão de tarefas — teste técnico UEX.
 
-## Monorepo layout
+🔗 **Aplicação em produção:** https://taskly-olive-mu.vercel.app
+
+> O backend roda no **free tier do Render** e "hiberna" após um período ocioso:
+> a primeira requisição depois disso leva **cerca de 30–60 segundos** enquanto
+> o serviço acorda. Lentidão inicial ao abrir o link é esperada — não é um bug.
+> O banco Postgres do plano free também é removido 30 dias após a criação.
+
+## Stack
+
+**Backend** — Python 3.12 · FastAPI · SQLAlchemy 2.0 (async) · Alembic ·
+Pydantic v2 · PostgreSQL 16 · JWT (PyJWT) · bcrypt · boto3 (armazenamento
+S3-compatível / Cloudflare R2). Arquitetura em camadas
+(`api → services → repositories → models`), com exceções de domínio e um handler
+central. Qualidade: ruff, mypy (strict) e pytest.
+
+**Frontend** — React 19 · Vite · TypeScript · Tailwind CSS v4 · shadcn/ui ·
+TanStack Query · React Router · React Hook Form + Zod · axios. Lint com oxlint.
+
+Detalhes de cada parte estão nos READMEs específicos:
+[`backend/README.md`](backend/README.md) e
+[`frontend/README.md`](frontend/README.md).
+
+## Layout do monorepo
 
 ```
-backend/      FastAPI API (Python), layered architecture — see backend/README.md
-frontend/     React + Vite + TypeScript SPA — see frontend/README.md
-docs/specs/   feature specs (one per feature)
-render.yaml   Render Blueprint for the backend deploy
+backend/             API FastAPI (Python), arquitetura em camadas — ver backend/README.md
+frontend/            SPA React + Vite + TypeScript — ver frontend/README.md
+docs/specs/          especificações das features (auth, projects-tasks-tags, attachments)
+.github/workflows/   pipeline de CI (ci.yml)
+render.yaml          Blueprint do Render para o deploy do backend
+CLAUDE.md            instruções do projeto para o assistente de código
 ```
+
+## Como rodar localmente
+
+Pré-requisitos: **Docker** (para o Postgres e o MinIO) e **Node.js**.
+
+```bash
+# Backend — API em http://localhost:8000 (docs interativas em /docs)
+cd backend
+docker compose up -d                                # Postgres 16 (+ banco de testes) e MinIO
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+cp .env.example .env
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+```bash
+# Frontend — aplicação em http://localhost:5173
+cd frontend
+npm install
+cp .env.example .env                                # VITE_API_URL aponta para http://localhost:8000
+npm run dev
+```
+
+O passo a passo completo (migrations, testes, tooling de qualidade) está nos
+READMEs de cada parte.
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every push and pull request:
+`.github/workflows/ci.yml` roda a cada push e pull request, com dois jobs em
+paralelo:
 
-- **backend** — starts a Postgres 16 service, installs the backend dependencies,
-  and runs `ruff check`, `ruff format --check`, `mypy`, and `pytest`.
-- **frontend** — installs dependencies (`npm ci`) and runs `npm run lint`,
-  `tsc -b`, and `npm run build`.
+- **backend** — sobe um serviço Postgres 16, instala as dependências do backend
+  e executa `ruff check`, `ruff format --check`, `mypy` e `pytest`.
+- **frontend** — instala as dependências (`npm ci`) e executa `npm run lint`,
+  `tsc -b` e `npm run build`.
 
 ## Deploy
 
-The backend and frontend are deployed separately:
+O backend e o frontend são publicados separadamente:
 
-| Part | Platform | How |
+| Parte | Plataforma | Configuração |
 | --- | --- | --- |
-| Backend (FastAPI + Postgres) | [Render](https://render.com) | Blueprint (`render.yaml`) |
-| Frontend (Vite SPA) | [Vercel](https://vercel.com) | Import the `frontend/` directory |
+| Backend (FastAPI + Postgres) | [Render](https://render.com) | `render.yaml` (Blueprint) + `backend/Dockerfile` |
+| Frontend (SPA Vite) | [Vercel](https://vercel.com) | Root Directory `frontend/` + `frontend/vercel.json` |
 
-### Backend — Render Blueprint
+O `render.yaml` provisiona um serviço web Docker e um banco PostgreSQL
+gerenciado (plano free); o `backend/Dockerfile` é um build de produção
+multi-stage, roda como usuário não-root, e aplica migrations
+(`alembic upgrade head`) automaticamente em cada deploy. No frontend,
+`vercel.json` garante o fallback de rotas para uma SPA (qualquer caminho não
+encontrado cai em `index.html`, deixando o React Router assumir).
 
-`render.yaml` describes a Docker web service (`taskly-api`) and a managed
-Postgres database (`taskly-db`, free plan). `backend/Dockerfile` is a multi-stage
-production build that runs as a non-root user and applies database migrations
-(`alembic upgrade head`) automatically on every deploy before starting uvicorn.
-
-1. Create a Render account and connect this GitHub repository.
-2. **New → Blueprint**, select the repo. Render reads `render.yaml` and shows the
-   service + database it will create.
-3. Apply the blueprint. The Postgres database is created and `DATABASE_URL` is
-   wired to the web service automatically.
-4. Open the `taskly-api` service → **Environment** and fill in the values left
-   blank on purpose (they are secrets / environment-specific): `JWT_SECRET_KEY`,
-   `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`, `BCRYPT_ROUNDS`, the `R2_*`
-   variables, `ATTACHMENT_MAX_BYTES`, `ATTACHMENT_URL_TTL_SECONDS`, and
-   `CORS_ORIGINS`. `CORS_ORIGINS` is a JSON array string, e.g.
-   `["https://taskly.vercel.app"]`.
-5. Save — Render redeploys with the new values. Health is checked at `/health`.
-
-### Frontend — Vercel
-
-1. Import the project on Vercel with **Root Directory** set to `frontend/`.
-2. Set `VITE_API_URL` to the Render backend URL
-   (e.g. `https://taskly-api.onrender.com`).
-3. Deploy. Add the resulting Vercel URL to the backend's `CORS_ORIGINS`.
-
-### ⚠️ First request is slow (Render free tier)
-
-The backend runs on Render's **free tier**, which puts the service to sleep after
-a period of inactivity. The first request after it has gone dormant takes
-**roughly 30–60 seconds** while the service wakes up; subsequent requests are
-fast. Initial slowness when opening the app link is expected — it is not a bug.
-
-> Note: Render's free Postgres database is also removed 30 days after creation.
-> For a longer-lived deploy, upgrade the database to a paid plan.
+Variáveis sensíveis (`JWT_SECRET_KEY`, credenciais do R2, `CORS_ORIGINS`, etc.)
+não ficam no repositório — são preenchidas diretamente no painel de cada
+plataforma. `CORS_ORIGINS` no backend precisa incluir a URL do frontend
+publicado (ex.: `["https://taskly.vercel.app"]`), e `VITE_API_URL` no
+frontend precisa apontar para a URL do backend publicado
+(ex.: `https://taskly-api.onrender.com`).
