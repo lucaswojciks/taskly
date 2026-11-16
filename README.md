@@ -1,6 +1,6 @@
 # Taskly
 
-Sistema de gestão de tarefas — teste técnico UEX.
+Sistema de gestão de tarefas
 
 🔗 **Aplicação em produção:** https://taskly-olive-mu.vercel.app
 
